@@ -4,28 +4,22 @@ const POSTER_URL = BASE_URL + '/posters/'
 
 const movies = [] //電影總清單
 let filteredMovies = [] //搜尋清單
-
+let status = "card";
 const MOVIES_PER_PAGE = 12
+let currentPage = 1;
 
 const dataPanel = document.querySelector('#data-panel')
 const searchForm = document.querySelector('#search-form')
 const searchInput = document.querySelector('#search-input')
 const paginator = document.querySelector('#paginator')
 
-function renderMovieList(data) {
-  let rawHTML = ''
-  data.forEach((item) => {
-    // title, image, id
-    rawHTML += `<div class="col-sm-3">
-    <div class="mb-2">
-      <div class="card">
-        <img src="${POSTER_URL + item.image
-      }" class="card-img-top" alt="Movie Poster">
-        <div class="card-body">
-          <h5 class="card-title">${item.title}</h5>
-        </div>
-        <div class="card-footer">
-          <button 
+function renderMovieList(data, status) {
+  let rawHTML = "";
+  if (status === "list") {
+    data.forEach((item) => {
+      // title, image, id
+      rawHTML += `
+  <li class="list-group-item d-flex justify-content-between align-items-center">${item.title}<span><button 
             class="btn btn-primary 
             btn-show-movie" 
             data-bs-toggle="modal" 
@@ -39,13 +33,44 @@ function renderMovieList(data) {
             data-id="${item.id}"
           >
             +
+          </button></span></li>
+        `;
+    });
+  } else if (status === "card") {
+    data.forEach((item) => {
+      // title, image, id
+      rawHTML += `<div class="col-sm-3">
+    <div class="mb-2">
+      <div class="card">
+        <img src="${
+          POSTER_URL + item.image
+        }" class="card-img-top" alt="Movie Poster">
+        <div class="card-body">
+          <h5 class="card-title">${item.title}</h5>
+        </div>
+        <div class="card-footer">
+          <button
+            class="btn btn-primary
+            btn-show-movie"
+            data-bs-toggle="modal"
+            data-bs-target="#movie-modal"
+            data-id="${item.id}"
+          >
+            More
+          </button>
+          <button
+            class="btn btn-info btn-add-favorite"
+            data-id="${item.id}"
+          >
+            +
           </button>
         </div>
       </div>
     </div>
-  </div>`
-  })
-  dataPanel.innerHTML = rawHTML
+  </div>`;
+    });
+  }
+  dataPanel.innerHTML = rawHTML;
 }
 
 function renderPaginator(amount) {
@@ -131,12 +156,25 @@ paginator.addEventListener('click', function onPaginatorClicked(event) {
   renderMovieList(getMoviesByPage(page))
 })
 
+//tab view
+searchForm.addEventListener("click", function (event) {
+  const target = event.target;
+
+  if (target.classList.contains("fa-bars")) {
+    status = "list";
+    renderMovieList(getMoviesByPage(currentPage), status);
+  } else if (target.classList.contains("fa-th")) {
+    status = "card";
+    renderMovieList(getMoviesByPage(currentPage), status);
+  }
+});
+
 // send request to index api
 axios
   .get(INDEX_URL)
   .then((response) => {
     movies.push(...response.data.results)
     renderPaginator(movies.length)
-    renderMovieList(getMoviesByPage(1))
+    renderMovieList(getMoviesByPage(currentPage), status)
   })
   .catch((err) => console.log(err))

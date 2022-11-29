@@ -145,7 +145,7 @@ searchForm.addEventListener('submit', function onSearchFormSubmitted(event) {
   }
 
   renderPaginator(filteredMovies.length)
-  renderMovieList(getMoviesByPage(1))
+  renderMovieList(getMoviesByPage(1), status)
 })
 
 // listen to paginator
